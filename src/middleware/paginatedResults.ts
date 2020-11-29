@@ -1,6 +1,7 @@
-import { BadRequestError } from '@sgtickets/common';
+import { BadRequestError, NotAuthorizedError } from '@sgtickets/common';
 import { NextFunction, Request, Response }  from 'express';
 import { makeValid } from '../events/types/isValid';
+
 
 interface Results {
   next: Result;
@@ -10,7 +11,13 @@ interface Results {
 
 interface Match {
   make: string;
-  year: number
+  year: number;
+  userId?: string;
+}
+
+interface Matches {
+  make: string;
+  year: number;
 }
 
 interface Result {
@@ -36,20 +43,33 @@ export const  paginatedResults = (model:any) => {
       throw new BadRequestError('Invalid Query');
   }
 
+
+  
+  
   if (!req.query){
     throw new BadRequestError('Invalid Query');
   }
   const { page, limit, year, make } = req.query
      const match = {} as Match
+     const matches = {} as Matches
     const limits  = limit ? +limit : 10
     const pages = page ? +page!  : 1
+
+    
+   
+   match.userId = req.params.id
+    
+     
+     console.log(match.userId)
      if (year) {
     match.year = parseInt(year.toString())
+    matches.year = parseInt(year.toString())
   }
  
   if (make) {
     if (makeValid(make.toString())) {
       match.make = make.toString()
+      matches.make = make.toString()
     } 
 }
    
@@ -71,8 +91,25 @@ export const  paginatedResults = (model:any) => {
         limit: limits
       }
     }
+    if (match.userId !== undefined) {
+      try {
+        results.results = await model.find(match)
+        .limit(limits)
+        .skip(startIndex)
+        .exec()
+        res.paginatedResults = results
+        next()
+      } catch (e) {
+        throw new BadRequestError(e.message );
+        
+      }
+     }
+    
     try {
-      results.results = await model.find(match).limit(limits).skip(startIndex).exec()
+      results.results = await model.find(matches)
+      .limit(limits)
+      .skip(startIndex)
+      .exec()
       res.paginatedResults = results
       next()
     } catch (e) {

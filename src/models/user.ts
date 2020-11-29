@@ -1,9 +1,11 @@
 import mongoose from 'mongoose';
 import { Password } from '../routes/auth/services/password';
 import { updateIfCurrentPlugin } from 'mongoose-update-if-current';
+import { VehicleDoc } from './Vehicle';
 // An interface that describes the properties
 // that are requried to create a new User
 interface UserAttrs {
+  id?: string;
   fname: string;
   lname: string;
   phonenumber: string;
@@ -11,6 +13,7 @@ interface UserAttrs {
   password: string;
   avatar?: Buffer;
   referralcode?: string;
+  
 }
 
 // An interface that describes the properties
@@ -22,6 +25,7 @@ interface UserModel extends mongoose.Model<UserDoc> {
 // An interface that describes the properties
 // that a User Document has
 interface UserDoc extends mongoose.Document {
+  id?: string;
   fname: string;
   lname: string;
   phonenumber: string;
@@ -29,6 +33,7 @@ interface UserDoc extends mongoose.Document {
   password: string;
   referralcode?: string;
   avatar?: Buffer;
+ 
 }
 
 const userSchema = new mongoose.Schema(
@@ -67,7 +72,10 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: Buffer
     },
-    
+    vehicle: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Vehicle',
+    }],
   },
   {
     toJSON: {
@@ -84,6 +92,9 @@ const userSchema = new mongoose.Schema(
 userSchema.set('versionKey', 'version');
 userSchema.plugin(updateIfCurrentPlugin);
 userSchema.set('timestamps', true)
+
+
+
 userSchema.pre('save', async function(done) {
   if (this.isModified('password')) {
     const hashed = await Password.toHash(this.get('password'));
@@ -93,7 +104,17 @@ userSchema.pre('save', async function(done) {
 });
 
 userSchema.statics.build = (attrs: UserAttrs) => {
-  return new User(attrs);
+  return new User({
+    _id: attrs.id,
+    fname: attrs.fname,
+    lname: attrs.lname,
+    phonenumber: attrs.phonenumber,
+    email: attrs.email,
+    password: attrs.password,
+    avatar: attrs.avatar,
+    referralcode: attrs.referralcode,
+
+  });
 };
 
 const User = mongoose.model<UserDoc, UserModel>('User', userSchema);

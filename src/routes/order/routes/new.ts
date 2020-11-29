@@ -38,7 +38,7 @@ router.post(
   }
     const { vehicleId } = req.body;
 
-    // Find the ticket the user is trying to order in the database
+    // Find the vehicle the user is trying to order in the database
     const vehicle = await Vehicle.findById(vehicleId);
     if (!vehicle) {
       throw new NotFoundError();

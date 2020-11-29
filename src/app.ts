@@ -25,6 +25,7 @@ import { currentUserPasswordUpdateRouter } from './routes/auth/routes/password';
 import { currentUserDeleteAvatarRouter } from './routes/profile/routes/delete';
 import { showcurrentUserProfileRouter } from './routes/profile/routes/show';
 import { forgotPasswordRouter } from './routes/auth/routes/forgot-password';
+import { indexUserVehiclesRouter } from './routes/profile/routes';
 
 const app = express();
 app.set('trust proxy', true);
@@ -47,6 +48,7 @@ app.use(currentUserPasswordUpdateRouter)
 app.use(currentUserDeleteAvatarRouter)
 app.use(showcurrentUserProfileRouter)
 app.use(forgotPasswordRouter)
+app.use(indexUserVehiclesRouter)
 app.use(currentUser);
 
 app.use(createVehicleRouter);

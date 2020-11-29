@@ -1,8 +1,9 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
-import { BadRequestError, requireAuth, validateRequest } from '@sgtickets/common';
+import { BadRequestError, NotAuthorizedError, NotFoundError, requireAuth, validateRequest } from '@sgtickets/common';
 import { Vehicle } from '../../../models/Vehicle';
 import { vehicleConditionValid, vehicleBodyStyleValid, vehicleTransmissionValid } from '../../../events/types/isValid';
+import { currentUser } from '../../auth/current-user';
 const router = express.Router();
 
 router.post(
@@ -35,7 +36,7 @@ router.post(
     .custom((input: string) => vehicleTransmissionValid(input))
     .withMessage('Vehicle Transmission selected is not avaliable on the system here are the available selection: Automatic, Manual'),
   ],
-  validateRequest,
+  validateRequest, currentUser,
   async (req: Request, res: Response) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['make', 'color','price','year', 'condition','bodyStyles', 'transmission','phonenumber', 'password']
@@ -44,6 +45,11 @@ router.post(
     if (!isValidOperation) {
       throw new BadRequestError('Invalid Request!');
   }
+  if (!req.currentUser) {
+    throw new NotAuthorizedError()
+    }
+
+       // Find the vehicle the user is trying to order in the database
     const { make, price, color, year, condition, carRating, bodyStyles, transmission} = req.body;
     const vehicle = Vehicle.build({
       make,
@@ -55,7 +61,6 @@ router.post(
       carRating, bodyStyles, transmission
     });
     await vehicle.save();
-    
 
     res.status(201).send(vehicle);
   }
