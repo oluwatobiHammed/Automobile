@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import { currentUser } from '../../auth/current-user';
 import { paginatedResults } from '../../../middleware/paginatedResults';
-import { User } from '../../../models/user';
 import { NotAuthorizedError, NotFoundError } from '@sgtickets/common';
 import { Vehicle } from '../../../models/Vehicle';
 

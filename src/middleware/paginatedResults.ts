@@ -60,7 +60,6 @@ export const  paginatedResults = (model:any) => {
    match.userId = req.params.id
     
      
-     console.log(match.userId)
      if (year) {
     match.year = parseInt(year.toString())
     matches.year = parseInt(year.toString())
